@@ -1,9 +1,15 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/students.js", "use": "@vercel/node" }
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/api/students/?", "dest": "/api/students.js" }
+    {
+      "src": "/(.*)",
+      "dest": "index.js"
+    }
   ]
 }
