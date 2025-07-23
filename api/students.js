@@ -1,47 +1,64 @@
 import express from 'express';
-import { openDb } from '../db.js';
+import pool from '../db.js';
 
 const router = express.Router();
 
-// CREATE
+// ✅ CREATE
 router.post('/', async (req, res) => {
-  const db = await openDb();
-  const { firstName, lastName, studentId, birthDate, gender } = req.body;
-  await db.run('INSERT INTO students (firstName, lastName, studentId, birthDate, gender) VALUES (?, ?, ?, ?, ?)', 
-    [firstName, lastName, studentId, birthDate, gender]);
-  res.status(201).json({ message: 'Student created' });
+  try {
+    const { firstName, lastName, studentId, birthDate, gender } = req.body;
+    await pool.query(
+      'INSERT INTO students (firstName, lastName, studentId, birthDate, gender) VALUES ($1, $2, $3, $4, $5)',
+      [firstName, lastName, studentId, birthDate, gender]
+    );
+    res.status(201).json({ message: 'Student created' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// READ all
+// ✅ READ all
 router.get('/', async (req, res) => {
-  const db = await openDb();
-  const students = await db.all('SELECT * FROM students');
-  res.json(students);
+  try {
+    const result = await pool.query('SELECT * FROM students');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// READ one
+// ✅ READ one
 router.get('/:id', async (req, res) => {
-  const db = await openDb();
-  const student = await db.get('SELECT * FROM students WHERE id = ?', [req.params.id]);
-  res.json(student);
+  try {
+    const result = await pool.query('SELECT * FROM students WHERE id = $1', [req.params.id]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// UPDATE
+// ✅ UPDATE
 router.put('/:id', async (req, res) => {
-  const db = await openDb();
-  const { firstName, lastName, studentId, birthDate, gender } = req.body;
-  await db.run(
-    'UPDATE students SET firstName = ?, lastName = ?, studentId = ?, birthDate = ?, gender = ? WHERE id = ?',
-    [firstName, lastName, studentId, birthDate, gender, req.params.id]
-  );
-  res.json({ message: 'Student updated' });
+  try {
+    const { firstName, lastName, studentId, birthDate, gender } = req.body;
+    await pool.query(
+      'UPDATE students SET firstName = $1, lastName = $2, studentId = $3, birthDate = $4, gender = $5 WHERE id = $6',
+      [firstName, lastName, studentId, birthDate, gender, req.params.id]
+    );
+    res.json({ message: 'Student updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// DELETE
+// ✅ DELETE
 router.delete('/:id', async (req, res) => {
-  const db = await openDb();
-  await db.run('DELETE FROM students WHERE id = ?', [req.params.id]);
-  res.json({ message: 'Student deleted' });
+  try {
+    await pool.query('DELETE FROM students WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Student deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

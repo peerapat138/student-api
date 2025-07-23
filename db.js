@@ -1,9 +1,9 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import pkg from 'pg';
+const { Pool } = pkg;
 
-export async function openDb() {
-  return open({
-    filename: './student.db',
-    driver: sqlite3.Database
-  });
-}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // ถ้าใช้ Vercel + Neon/Supabase
+});
+
+export default pool;
